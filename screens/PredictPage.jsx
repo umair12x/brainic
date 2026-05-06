@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,20 @@ import {
   Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import Constants from 'expo-constants';
 
-const API_BASE_URL = 'http://192.168.1.x:8000'; // Replace with your local IP
+const resolveApiBaseUrl = () => {
+  const env = process.env.EXPO_PUBLIC_API_BASE_URL;
+  const extra1 = Constants?.expoConfig?.extra?.EXPO_PUBLIC_API_BASE_URL;
+  const extra2 = Constants?.manifest?.extra?.EXPO_PUBLIC_API_BASE_URL;
+  const configured = env || extra1 || extra2;
+  if (configured) return configured;
+  if (Platform.OS === 'android') return 'http://10.0.2.2:8000';
+  if (Platform.OS === 'ios') return 'http://127.0.0.1:8000';
+  return 'http://192.168.0.100:8000';
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export default function PredictPage() {
   const [image, setImage] = useState(null);
@@ -29,10 +40,10 @@ export default function PredictPage() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
+      mediaTypes: 'images',
       allowsEditing: true,
       quality: 0.8,
-      base64: true,
+      base64: false, // Set to false to avoid memory issues
     });
 
     if (!result.canceled) {
@@ -52,7 +63,7 @@ export default function PredictPage() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 0.8,
-      base64: true,
+      base64: false,
     });
 
     if (!result.canceled) {
@@ -73,34 +84,46 @@ export default function PredictPage() {
 
     try {
       const formData = new FormData();
-      const uri = image.uri;
-      const filename = uri.split('/').pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
 
+      const uri = image.uri;
+      const filename = uri.split('/').pop() || 'image.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const fileType = match ? `image/${match[1]}` : 'image/jpeg';
+
+      // @ts-ignore - React Native's FormData append with object
       formData.append('file', {
         uri: uri,
         name: filename,
-        type: type,
+        type: fileType,
       });
 
       const response = await fetch(`${API_BASE_URL}/predict`, {
         method: 'POST',
         body: formData,
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'multipart/form-data',
         },
       });
 
       if (!response.ok) {
-        throw new Error('Prediction failed');
+        let errorMessage = `Prediction failed with status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch (e) {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       setResult(data);
+      Alert.alert('Success', 'Prediction completed successfully!');
     } catch (err) {
       setError(err.message);
-      Alert.alert('Error', 'Failed to get prediction. Please check your connection.');
+      Alert.alert('Error', `Failed to get prediction: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -138,7 +161,7 @@ export default function PredictPage() {
           ) : (
             <View style={styles.uploadPlaceholder}>
               <Text style={styles.uploadIcon}>MRI</Text>
-              <Text style={styles.placeholderTitle}>Drop your MRI image here</Text>
+              <Text style={styles.placeholderTitle}>Select an MRI image</Text>
               <Text style={styles.placeholderText}>
                 PNG, JPG, or JPEG files work best for the classifier.
               </Text>
@@ -149,7 +172,7 @@ export default function PredictPage() {
             <TouchableOpacity
               style={[styles.primaryButton, loading && styles.buttonDisabled]}
               onPress={submitImage}
-              disabled={loading}
+              disabled={loading || !image}
             >
               {loading ? (
                 <ActivityIndicator color="#ffffff" />
@@ -185,8 +208,8 @@ export default function PredictPage() {
               </View>
 
               <View style={styles.resultList}>
-                {result.top_predictions.map((item) => (
-                  <View style={styles.resultItem} key={item.label}>
+                {result.top_predictions && result.top_predictions.map((item, index) => (
+                  <View style={styles.resultItem} key={index}>
                     <Text style={styles.resultItemLabel}>{item.display_label}</Text>
                     <Text style={styles.resultItemValue}>
                       {item.confidence.toFixed(2)}%
@@ -224,7 +247,7 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#3b82f6',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -232,12 +255,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#1f2937',
     marginBottom: 12,
   },
   description: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     lineHeight: 20,
     marginBottom: 16,
@@ -257,7 +281,7 @@ const styles = StyleSheet.create({
   },
   ghostButtonText: {
     color: '#374151',
-    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
     textAlign: 'center',
     fontSize: 14,
   },
@@ -278,6 +302,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginBottom: 16,
+    resizeMode: 'cover',
   },
   uploadPlaceholder: {
     alignItems: 'center',
@@ -285,18 +310,19 @@ const styles = StyleSheet.create({
   },
   uploadIcon: {
     fontSize: 48,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#9ca3af',
     marginBottom: 16,
   },
   placeholderTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#374151',
     marginBottom: 8,
   },
   placeholderText: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     textAlign: 'center',
   },
@@ -318,7 +344,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#ffffff',
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
   secondaryButton: {
@@ -332,18 +358,21 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: '#374151',
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
   fileName: {
     fontSize: 12,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     marginTop: 12,
   },
   errorText: {
     fontSize: 14,
+    fontFamily: 'Inter_500Medium',
     color: '#ef4444',
     marginTop: 12,
+    textAlign: 'center',
   },
   resultCard: {
     backgroundColor: '#ffffff',
@@ -354,7 +383,7 @@ const styles = StyleSheet.create({
   },
   panelLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#6b7280',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -366,12 +395,13 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#1f2937',
     marginBottom: 4,
   },
   resultConfidence: {
     fontSize: 16,
+    fontFamily: 'Inter_500Medium',
     color: '#6b7280',
   },
   resultList: {
@@ -388,15 +418,17 @@ const styles = StyleSheet.create({
   },
   resultItemLabel: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#374151',
   },
   resultItemValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#3b82f6',
   },
   resultMeta: {
     fontSize: 12,
+    fontFamily: 'Inter_400Regular',
     color: '#9ca3af',
     marginTop: 12,
   },
@@ -406,12 +438,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#374151',
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     textAlign: 'center',
   },

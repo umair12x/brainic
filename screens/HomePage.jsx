@@ -5,11 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-const { width } = Dimensions.get('window');
 
 const stats = [
   { value: "4x", label: "Tumor classes in the pretrained model" },
@@ -28,28 +25,7 @@ const features = [
   },
   {
     title: "Modern stack",
-    description: "Next.js frontend, FastAPI backend, Hugging Face model inference.",
-  },
-];
-
-const repositoryMeta = {
-  description: 'Brainic is an Expo React Native app for MRI brain tumor prediction and AI consultation.',
-  website: 'https://github.com/umairimran/brainic',
-  topics: 'expo react-native fastapi mri brain-tumor ai healthcare',
-};
-
-const includes = [
-  {
-    title: 'Releases',
-    description: 'Track published versions and changelogs for each app update.',
-  },
-  {
-    title: 'Deployments',
-    description: 'View environment rollout status and deployment history.',
-  },
-  {
-    title: 'Packages',
-    description: 'Publish and manage reusable package artifacts.',
+    description: "Expo frontend, FastAPI backend, and model inference working together.",
   },
 ];
 
@@ -58,7 +34,6 @@ export default function HomePage() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Hero Section */}
       <View style={styles.hero}>
         <View style={styles.heroCopy}>
           <Text style={styles.eyebrow}>Brain Tumor Classification</Text>
@@ -104,7 +79,6 @@ export default function HomePage() {
         </View>
       </View>
 
-      {/* Stats Grid */}
       <View style={styles.statsGrid}>
         {stats.map((item) => (
           <View style={styles.statCard} key={item.label}>
@@ -114,7 +88,6 @@ export default function HomePage() {
         ))}
       </View>
 
-      {/* Features Grid */}
       <View style={styles.featureGrid}>
         {features.map((feature) => (
           <View style={styles.featureCard} key={feature.title}>
@@ -124,31 +97,6 @@ export default function HomePage() {
         ))}
       </View>
 
-      <View style={styles.repoMetaSection}>
-        <Text style={styles.sectionHeading}>Repository Details</Text>
-        <View style={styles.metaCard}>
-          <Text style={styles.metaLabel}>Description</Text>
-          <Text style={styles.metaValue}>{repositoryMeta.description}</Text>
-        </View>
-        <View style={styles.metaCard}>
-          <Text style={styles.metaLabel}>Website</Text>
-          <Text style={styles.metaValue}>{repositoryMeta.website}</Text>
-        </View>
-        <View style={styles.metaCard}>
-          <Text style={styles.metaLabel}>Topics (separate with spaces)</Text>
-          <Text style={styles.metaValue}>{repositoryMeta.topics}</Text>
-        </View>
-      </View>
-
-      <View style={styles.includesSection}>
-        <Text style={styles.sectionHeading}>Include In The Home Page</Text>
-        {includes.map((item) => (
-          <View style={styles.includeCard} key={item.title}>
-            <Text style={styles.includeTitle}>{item.title}</Text>
-            <Text style={styles.includeDescription}>{item.description}</Text>
-          </View>
-        ))}
-      </View>
     </ScrollView>
   );
 }
@@ -169,7 +117,7 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#3b82f6',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -177,13 +125,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#1f2937',
     lineHeight: 36,
     marginBottom: 12,
   },
   description: {
     fontSize: 16,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     lineHeight: 24,
     marginBottom: 24,
@@ -201,7 +150,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#ffffff',
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
   secondaryButton: {
@@ -215,7 +164,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: '#374151',
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
   },
   heroPanel: {
@@ -238,7 +187,7 @@ const styles = StyleSheet.create({
   },
   panelLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#6b7280',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -249,16 +198,18 @@ const styles = StyleSheet.create({
   },
   stepText: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#374151',
   },
   outputTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#1f2937',
     marginBottom: 4,
   },
   outputDescription: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
   },
   statsGrid: {
@@ -277,12 +228,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#3b82f6',
     marginBottom: 8,
   },
   statLabel: {
     fontSize: 12,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     textAlign: 'center',
   },
@@ -299,66 +251,13 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#1f2937',
     marginBottom: 8,
   },
   featureDescription: {
     fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
-  },
-  sectionHeading: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  repoMetaSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-    gap: 10,
-  },
-  metaCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 14,
-  },
-  metaLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6b7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 6,
-  },
-  metaValue: {
-    fontSize: 14,
-    color: '#1f2937',
-    lineHeight: 20,
-  },
-  includesSection: {
-    padding: 20,
-    paddingTop: 12,
-    gap: 10,
-  },
-  includeCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 14,
-  },
-  includeTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  includeDescription: {
-    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     color: '#6b7280',
     lineHeight: 20,
   },
