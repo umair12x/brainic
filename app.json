@@ -2,7 +2,7 @@
   "expo": {
     "name": "brainic",
     "slug": "brainic",
-    "version": "1.0.0",
+    "version": "3.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,21 +12,31 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
+    
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "CAMERA",
+        "INTERNET",
+        "READ_MEDIA_IMAGES",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Brainic needs camera access to capture MRI images.",
+        "NSPhotoLibraryUsageDescription": "Brainic needs photo library access to pick MRI images.",
+        "NSPhotoLibraryAddUsageDescription": "Brainic may save captured images to your photo library."
+      }
     },
-    "plugins": [
-      "expo-font"
-    ]
+    "extra": {
+      "EXPO_PUBLIC_API_BASE_URL": "http://192.168.0.100:8000"
+    }
   }
 }
