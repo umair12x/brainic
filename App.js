@@ -1,20 +1,136 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import HomePage from './screens/HomePage';
+import PredictPage from './screens/PredictPage';
+import ConsultPage from './screens/ConsultPage';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function App() {
+const Tab = createBottomTabNavigator();
+
+const HEADER_META = {
+  Home: {
+    title: 'Brainic',
+    subtitle: 'Overview & quick actions',
+  },
+  Predict: {
+    title: 'MRI Predictor',
+    subtitle: 'Upload and classify scan images',
+  },
+  Consult: {
+    title: 'AI Consultation',
+    subtitle: 'Ask medical questions instantly',
+  },
+};
+
+function HeaderTitle({ routeName }) {
+  const meta = HEADER_META[routeName] ?? HEADER_META.Home;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={styles.headerTitleWrap}>
+      <Text style={styles.headerTitle}>{meta.title}</Text>
+      <Text style={styles.headerSubtitle}>{meta.subtitle}</Text>
     </View>
   );
 }
 
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
+              if (route.name === 'Home') {
+                iconName = focused ? 'home' : 'home-outline';
+              } else if (route.name === 'Predict') {
+                iconName = focused ? 'scan' : 'scan-outline';
+              } else if (route.name === 'Consult') {
+                iconName = focused ? 'chatbubble' : 'chatbubble-outline';
+              }
+              return <Ionicons name={iconName} size={size} color={color} />;
+            },
+            tabBarActiveTintColor: '#2563eb',
+            tabBarInactiveTintColor: '#6b7280',
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '600',
+              marginBottom: 2,
+            },
+            tabBarStyle: {
+              backgroundColor: '#ffffff',
+              borderTopWidth: 1,
+              borderTopColor: '#e5e7eb',
+              paddingBottom: 10,
+              paddingTop: 8,
+              height: 72,
+            },
+            headerStyle: {
+              backgroundColor: '#ffffff',
+            },
+            headerShadowVisible: false,
+            headerTitle: () => <HeaderTitle routeName={route.name} />,
+            headerTitleAlign: 'left',
+            headerLeftContainerStyle: {
+              paddingLeft: 4,
+            },
+            headerRight: () => (
+              <View style={styles.headerChip}>
+                <Text style={styles.headerChipText}>v1</Text>
+              </View>
+            ),
+            headerRightContainerStyle: {
+              paddingRight: 12,
+            },
+            headerBackground: () => <View style={styles.headerBackground} />,
+            sceneContainerStyle: {
+              backgroundColor: '#f8fafc',
+            },
+          })}
+        >
+          <Tab.Screen name="Home" component={HomePage} />
+          <Tab.Screen name="Predict" component={PredictPage} />
+          <Tab.Screen name="Consult" component={ConsultPage} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
+  headerBackground: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  headerTitleWrap: {
+    paddingVertical: 6,
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  headerChip: {
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  headerChipText: {
+    color: '#2563eb',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
