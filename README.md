@@ -1,68 +1,52 @@
-# Brainic Mobile App
+# Brainic
 
-Brainic is an Expo React Native mobile app for brain tumor MRI workflows.
-It provides:
+Brainic is an Expo React Native app for MRI-based brain tumor prediction and medical consultation.
 
-- MRI image upload and tumor prediction view
-- AI-powered medical consultation chat
-- A polished tab-based UI with safe-area-aware headers
+## App flow
+
+1. Open the app on the Home screen.
+2. Go to Predict to choose an MRI image from the gallery or capture one with the camera.
+3. Send the image to the backend and view the prediction with confidence values.
+4. Go to Consult to ask follow-up medical questions in a chat-style interface.
 
 ## Features
 
-- `Home` screen with app overview and quick actions
-- `Predict` screen:
-  - Pick MRI image from gallery
-  - Capture MRI image with camera
-  - Send image to backend and display prediction + confidence
-- `Consult` screen:
-  - Chat-style assistant UI
-  - Suggested starter questions
-  - Medical disclaimer banner
-- Shared, consistent app header and bottom tab navigation
+- Clean tab-based navigation
+- Home screen with a short overview and quick actions
+- Predict screen for gallery upload or camera capture
+- AI consultation screen for medical Q&A
+- Safe-area aware layout and keyboard-friendly consult screen
 
-## Repository Metadata
+## Permissions
 
-- Description: Brainic is an Expo React Native app for MRI brain tumor prediction and AI consultation.
-- Website: https://github.com/umairimran/brainic
-- Topics (separate with spaces): expo react-native fastapi mri brain-tumor ai healthcare
+The app requests the following permissions:
 
-Include in the home page:
+- Camera access for taking photos
+- Photo library / storage access for selecting images
+- Internet access for API requests
 
-- Releases
-- Deployments
-- Packages
+## Tech stack
 
-## Tech Stack
+- Expo SDK 54
+- React Native
+- React Navigation bottom tabs
+- expo-image-picker for camera and gallery selection
+- expo-font with Inter typography for a clean medical-style UI
+- FastAPI backend for prediction and chat endpoints
 
-- Expo (`~54`)
-- React Native (`0.81.5`)
-- React Navigation (bottom tabs)
-- `expo-image-picker` for camera/gallery image selection
-- `react-native-safe-area-context` for safe layout on modern devices
+## Project structure
 
-## Project Structure
+- App.js
+- app.json
+- index.js
+- package.json
+- screens/HomePage.jsx
+- screens/PredictPage.jsx
+- screens/ConsultPage.jsx
 
-```text
-brainic/
-  App.js
-  app.json
-  index.js
-  package.json
-  assets/
-  screens/
-    HomePage.jsx
-    PredictPage.jsx
-    ConsultPage.jsx
-```
+## Setup
 
-## Prerequisites
-
-- Node.js 18+ (recommended)
-- npm or Bun
-- Expo Go app on your phone (or Android/iOS emulator)
-- A running backend API (FastAPI) accessible from your phone/emulator network
-
-## Installation
+Install dependencies:
 
 ```bash
 npm install
@@ -74,19 +58,17 @@ Or with Bun:
 bun install
 ```
 
-## Run the App
+## Run the app
+
+Start Expo:
 
 ```bash
 npm run start
 ```
 
-Then choose one:
+Then open the app on Android, iOS, or Expo Go.
 
-- `a` for Android emulator
-- `i` for iOS simulator (macOS)
-- Scan QR code with Expo Go
-
-You can also run directly:
+You can also run:
 
 ```bash
 npm run android
@@ -94,103 +76,42 @@ npm run ios
 npm run web
 ```
 
-## Backend Configuration
+## Backend configuration
 
-This app currently uses a hardcoded API base URL in:
+The app reads the API base URL from `EXPO_PUBLIC_API_BASE_URL` in `app.json`.
 
-- `screens/PredictPage.jsx`
-- `screens/ConsultPage.jsx`
+If needed, update it to point to your FastAPI server, for example:
 
-Update this line in both files before testing on device:
-
-```js
-const API_BASE_URL = 'http://192.168.1.x:8000';
+```json
+"extra": {
+  "EXPO_PUBLIC_API_BASE_URL": "http://192.168.1.x:8000"
+}
 ```
 
-Replace `192.168.1.x` with your machine's local IP where FastAPI is running.
+Use your machine's LAN IP when testing on a physical phone.
 
-Important:
-
-- Do not use `localhost` when testing from a physical phone.
-- Phone and backend machine must be on the same Wi-Fi network.
-
-## Expected API Endpoints
+## API endpoints
 
 ### `POST /predict`
 
-- Request: `multipart/form-data` with `file`
-- Used by `Predict` screen
-- Expected response shape:
-
-```json
-{
-  "filename": "scan.jpg",
-  "prediction": {
-    "display_label": "Glioma Tumor",
-    "confidence": 96.42
-  },
-  "top_predictions": [
-    {
-      "label": "glioma",
-      "display_label": "Glioma Tumor",
-      "confidence": 96.42
-    }
-  ]
-}
-```
+- Accepts `multipart/form-data`
+- File field name: `file`
+- Returns the predicted tumor class, confidence, and top predictions
 
 ### `POST /chat`
 
-- Request body:
+- Accepts JSON with `message` and `history`
+- Returns a text reply for the consult assistant
 
-```json
-{
-  "message": "What are common symptoms?",
-  "history": [
-    { "role": "user", "content": "..." },
-    { "role": "assistant", "content": "..." }
-  ]
-}
-```
+## Notes
 
-- Used by `Consult` screen
-- Expected response shape:
-
-```json
-{
-  "reply": "..."
-}
-```
-
-## Permissions
-
-The app requests:
-
-- Media library permission (for gallery image picking)
-- Camera permission (for taking photos)
-
-If denied, prediction image input will not work.
+- Gallery picking uses `expo-image-picker`
+- Camera and media permissions must be granted for image input to work
+- The consult screen is keyboard aware and should keep the input visible while typing
 
 ## Troubleshooting
 
-- Expo app opens but prediction/chat fails:
-  - Check `API_BASE_URL`
-  - Confirm backend is running and reachable on LAN
-- Camera/gallery does not open in Expo Go:
-  - Confirm permissions are granted
-  - Ensure `expo-image-picker` is installed (already included)
-- Network request errors on Android emulator:
-  - Use host machine IP instead of localhost
-
-## Scripts
-
-From `package.json`:
-
-- `npm run start`
-- `npm run android`
-- `npm run ios`
-- `npm run web`
-
-## Medical Notice
-
-This application is for educational and informational use. It does not replace professional medical diagnosis, treatment, or advice.
+- If the backend is unreachable, verify the IP address in `app.json`
+- Do not use `localhost` on a physical device
+- Make sure the phone and backend computer are on the same network
+- If image picking does not work, check camera and photo permissions
