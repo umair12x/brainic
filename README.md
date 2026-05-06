@@ -20,6 +20,18 @@ It provides:
   - Medical disclaimer banner
 - Shared, consistent app header and bottom tab navigation
 
+## Repository Metadata
+
+- Description: Brainic is an Expo React Native app for MRI brain tumor prediction and AI consultation.
+- Website: https://github.com/umairimran/brainic
+- Topics (separate with spaces): expo react-native fastapi mri brain-tumor ai healthcare
+
+Include in the home page:
+
+- Releases
+- Deployments
+- Packages
+
 ## Tech Stack
 
 - Expo (`~54`)

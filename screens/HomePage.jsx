@@ -32,6 +32,27 @@ const features = [
   },
 ];
 
+const repositoryMeta = {
+  description: 'Brainic is an Expo React Native app for MRI brain tumor prediction and AI consultation.',
+  website: 'https://github.com/umairimran/brainic',
+  topics: 'expo react-native fastapi mri brain-tumor ai healthcare',
+};
+
+const includes = [
+  {
+    title: 'Releases',
+    description: 'Track published versions and changelogs for each app update.',
+  },
+  {
+    title: 'Deployments',
+    description: 'View environment rollout status and deployment history.',
+  },
+  {
+    title: 'Packages',
+    description: 'Publish and manage reusable package artifacts.',
+  },
+];
+
 export default function HomePage() {
   const navigation = useNavigation();
 
@@ -99,6 +120,32 @@ export default function HomePage() {
           <View style={styles.featureCard} key={feature.title}>
             <Text style={styles.featureTitle}>{feature.title}</Text>
             <Text style={styles.featureDescription}>{feature.description}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.repoMetaSection}>
+        <Text style={styles.sectionHeading}>Repository Details</Text>
+        <View style={styles.metaCard}>
+          <Text style={styles.metaLabel}>Description</Text>
+          <Text style={styles.metaValue}>{repositoryMeta.description}</Text>
+        </View>
+        <View style={styles.metaCard}>
+          <Text style={styles.metaLabel}>Website</Text>
+          <Text style={styles.metaValue}>{repositoryMeta.website}</Text>
+        </View>
+        <View style={styles.metaCard}>
+          <Text style={styles.metaLabel}>Topics (separate with spaces)</Text>
+          <Text style={styles.metaValue}>{repositoryMeta.topics}</Text>
+        </View>
+      </View>
+
+      <View style={styles.includesSection}>
+        <Text style={styles.sectionHeading}>Include In The Home Page</Text>
+        {includes.map((item) => (
+          <View style={styles.includeCard} key={item.title}>
+            <Text style={styles.includeTitle}>{item.title}</Text>
+            <Text style={styles.includeDescription}>{item.description}</Text>
           </View>
         ))}
       </View>
@@ -257,6 +304,60 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   featureDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+  },
+  sectionHeading: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  repoMetaSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    gap: 10,
+  },
+  metaCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    padding: 14,
+  },
+  metaLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 6,
+  },
+  metaValue: {
+    fontSize: 14,
+    color: '#1f2937',
+    lineHeight: 20,
+  },
+  includesSection: {
+    padding: 20,
+    paddingTop: 12,
+    gap: 10,
+  },
+  includeCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    padding: 14,
+  },
+  includeTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  includeDescription: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
