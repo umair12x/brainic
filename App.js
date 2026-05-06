@@ -1,12 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import HomePage from './screens/HomePage';
 import PredictPage from './screens/PredictPage';
 import ConsultPage from './screens/ConsultPage';
 import { Ionicons } from '@expo/vector-icons';
+
+SplashScreen.preventAutoHideAsync();
 
 const Tab = createBottomTabNavigator();
 
@@ -37,6 +41,23 @@ function HeaderTitle({ routeName }) {
 }
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
@@ -57,7 +78,7 @@ export default function App() {
             tabBarInactiveTintColor: '#6b7280',
             tabBarLabelStyle: {
               fontSize: 12,
-              fontWeight: '600',
+              fontFamily: 'Inter_600SemiBold',
               marginBottom: 2,
             },
             tabBarStyle: {
@@ -79,7 +100,7 @@ export default function App() {
             },
             headerRight: () => (
               <View style={styles.headerChip}>
-                <Text style={styles.headerChipText}>v1</Text>
+                <Text style={styles.headerChipText}>v3.2</Text>
               </View>
             ),
             headerRightContainerStyle: {
@@ -113,10 +134,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: '#0f172a',
   },
   headerSubtitle: {
     fontSize: 12,
+    fontFamily: 'Inter_500Medium',
     color: '#64748b',
     marginTop: 2,
   },
@@ -131,6 +154,6 @@ const styles = StyleSheet.create({
   headerChipText: {
     color: '#2563eb',
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
 });
