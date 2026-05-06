@@ -47,15 +47,19 @@ export default function ConsultPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef();
   const inputRef = useRef();
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
       setKeyboardVisible(true);
+      setKeyboardHeight(event?.endCoordinates?.height ?? 0);
+      setTimeout(scrollToBottom, 150);
     });
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
+      setKeyboardHeight(0);
     });
 
     return () => {
@@ -130,7 +134,11 @@ export default function ConsultPage() {
     sendMessage(suggestion);
   };
 
-  const showSuggestions = messages.length <= 1 && !loading;
+  const showSuggestions = messages.length <= 1 && !loading && !keyboardVisible;
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
 
   const MessageBubble = ({ message }) => {
     const isUser = message.role === "user";
@@ -152,100 +160,106 @@ export default function ConsultPage() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        enabled={true}
-      >
-        <View style={styles.disclaimer}>
-          <Text style={styles.disclaimerIcon}>⚕️</Text>
-          <Text style={styles.disclaimerText}>
-            This AI provides general medical information only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
-          </Text>
-        </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? Constants.statusBarHeight + 10 : 0}
+    >
+      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+        <View style={styles.innerContainer}>
+          <View style={styles.disclaimer}>
+            <Text style={styles.disclaimerIcon}>⚕️</Text>
+            <Text style={styles.disclaimerText}>
+              This AI provides general medical information only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
+            </Text>
+          </View>
 
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messagesContainer}
-          contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
-          {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
-          ))}
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.messagesContainer}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
+            {messages.map((msg) => (
+              <MessageBubble key={msg.id} message={msg} />
+            ))}
 
-          {loading && (
-            <View style={[styles.bubbleWrapper, styles.assistantWrapper]}>
-              <View style={styles.bubbleAvatar}>
-                <Text style={styles.avatarIcon}>🧠</Text>
-              </View>
-              <View style={[styles.bubble, styles.assistantBubble, styles.typingBubble]}>
-                <View style={styles.typingIndicator}>
-                  <View style={styles.typingDot} />
-                  <View style={styles.typingDot} />
-                  <View style={styles.typingDot} />
+            {loading && (
+              <View style={[styles.bubbleWrapper, styles.assistantWrapper]}>
+                <View style={styles.bubbleAvatar}>
+                  <Text style={styles.avatarIcon}>🧠</Text>
+                </View>
+                <View style={[styles.bubble, styles.assistantBubble, styles.typingBubble]}>
+                  <View style={styles.typingIndicator}>
+                    <View style={styles.typingDot} />
+                    <View style={styles.typingDot} />
+                    <View style={styles.typingDot} />
+                  </View>
                 </View>
               </View>
+            )}
+          </ScrollView>
+
+          {showSuggestions && (
+            <View style={styles.suggestionsArea}>
+              <Text style={styles.suggestionsLabel}>Suggested topics</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.suggestionsScroll}
+              >
+                <View style={styles.suggestionsGrid}>
+                  {QUICK_SUGGESTIONS.map((suggestion) => (
+                    <TouchableOpacity
+                      key={suggestion}
+                      style={styles.suggestionChip}
+                      onPress={() => handleSuggestionClick(suggestion)}
+                      disabled={loading}
+                    >
+                      <Text style={styles.suggestionText}>{suggestion}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
             </View>
           )}
-        </ScrollView>
-
-        {showSuggestions && !keyboardVisible && (
-          <View style={styles.suggestionsArea}>
-            <Text style={styles.suggestionsLabel}>Suggested topics</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.suggestionsScroll}
-            >
-              <View style={styles.suggestionsGrid}>
-                {QUICK_SUGGESTIONS.map((suggestion) => (
-                  <TouchableOpacity
-                    key={suggestion}
-                    style={styles.suggestionChip}
-                    onPress={() => handleSuggestionClick(suggestion)}
-                    disabled={loading}
-                  >
-                    <Text style={styles.suggestionText}>{suggestion}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-        )}
-
-        <View style={styles.inputBar}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              ref={inputRef}
-              style={styles.input}
-              placeholder="Ask a medical question..."
-              value={input}
-              onChangeText={setInput}
-              multiline
-              editable={!loading}
-              returnKeyType="send"
-              blurOnSubmit={false}
-              onSubmitEditing={() => sendMessage(input)}
-            />
-            <TouchableOpacity
-              style={[styles.sendButton, (!input.trim() || loading) && styles.sendButtonDisabled]}
-              onPress={() => sendMessage(input)}
-              disabled={loading || !input.trim()}
-            >
-              <Text style={styles.sendButtonText}>➤</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.inputHint}>
-            Press ⏎ to send
-          </Text>
         </View>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+
+      <View
+        style={[
+          styles.inputBar,
+          Platform.OS === 'android' && keyboardHeight > 0 && { paddingBottom: keyboardHeight/2.5 },
+        ]}
+      >
+        <View style={styles.inputWrapper}>
+          <TextInput
+            ref={inputRef}
+            style={styles.input}
+            placeholder="Ask a medical question..."
+            value={input}
+            onChangeText={setInput}
+            multiline
+            editable={!loading}
+            returnKeyType="send"
+            blurOnSubmit={false}
+            onSubmitEditing={() => sendMessage(input)}
+          />
+          <TouchableOpacity
+            style={[styles.sendButton, (!input.trim() || loading) && styles.sendButtonDisabled]}
+            onPress={() => sendMessage(input)}
+            disabled={loading || !input.trim()}
+          >
+            <Text style={styles.sendButtonText}>➤</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.inputHint}>
+          Press ⏎ to send
+        </Text>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -253,6 +267,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
+  },
+  innerContainer: {
+    flex: 1,
   },
   disclaimer: {
     flexDirection: 'row',
@@ -379,7 +396,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
     padding: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16, // Extra padding for iOS home indicator
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   inputWrapper: {
     flexDirection: 'row',
